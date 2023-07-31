@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "@deck.gl/core": "^8.9.22",
+    "@deck.gl/layers": "^8.9.22",
+    "mapbox-gl": "^2.15.0"
+  }
+}
