@@ -9,6 +9,8 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <!-- Js file for adding a marker -->
   <script src="https://unpkg.com/@mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
+  <!-- Js file for fly to -->
+  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 
   <style>
     body {
@@ -49,7 +51,7 @@
     <div class="Search">
       <br><br>
       <input id="search" type="text" placeholder="Search for ...">
-      <button id ="Btn" type="submit">Go</button>
+      <button id="Btn" type="submit">Go</button>
       <p id="w"></p>
     </div>
     <!-- Drop list -->
@@ -66,84 +68,111 @@
   <script>
     mapboxgl.accessToken = 'pk.eyJ1IjoiZWRnYXIxMjciLCJhIjoiY2xrMzFodmFoMDM4eDNxcXdldGI3ZWJlMyJ9.rSpor_1z9qaL1Ng6yCuDvg';
     const map = new mapboxgl.Map({
-      container: 'map', // container ID
-      // Choose from Mapbox's core styles, or make your own style with Mapbox Studio
-      style: 'mapbox://styles/mapbox/streets-v12', // style URL
-      center: [-74.5, 40], // starting position [lng, lat]
-      zoom: 9 // starting zoom
+      container: 'map', 
+      
+      style: 'mapbox://styles/mapbox/streets-v12', 
+      center: [-74.5, 40], 
+      zoom: 9 
     });
   </script>
-  
-  <script>
-    let marker = null;
-    // Adding a eventlistener
-    const element = document.getElementById("Btn");
 
-    //Add a marker when click on the map
-    map.on("click", function(markers){
-      if(!marker){
-        //use to have var
-       marker = new mapboxgl.Marker({
-        color:"blue",
+  <script>
+
+    let markers = {}; 
+    let markerIdCounter = 0; 
+
+    // Adding a click event listener
+    map.on('style.load', function () {
+      map.on("click", function (event) {
+
+        const markerId = markerIdCounter++; // Get a new unique ID for the marker
+        const marker = new mapboxgl.Marker({
+          color: "blue",
+        }).setLngLat(event.lngLat).addTo(map);
+        //Adds a pop up with coordinates
+        var coordinates = event.lngLat;
+        new mapboxgl.Popup()
+          .setLngLat(coordinates)
+          .setHTML('you clicked here: <br/>' + coordinates)
+          .addTo(map);
+        // Store the marker in the markers object with its unique ID
+        markers[markerId] = marker;
       });
-    }
-      marker.setLngLat(markers.lngLat).addTo(map);
     });
+
     let longPressTimer;
-    //Delete marker
-    map.on("mousedown",function(markers){
+    // Delete marker
+    map.on("mousedown", function () {
       longPressTimer = setTimeout(() => {
-        if(marker){
-          marker.remove();
-          marker = null;
+        for (const markerId in markers) {
+          markers[markerId].getElement().addEventListener("mousedown", function () {
+            deleteMarkerById(markerId);
+          });
         }
-      },100);
+      }, 100);
     });
-    //Clear the timer when mousepad event occures
-    map.on("mouseup", function (markers){
+
+    // Clear the timer when mouseup event occurs
+    map.on("mouseup", function () {
       clearTimeout(longPressTimer);
     });
 
-    element.addEventListener("click",function(){
-        //Get the text the user types in
-        //Stored inside userInputText!
-        var userInputText = document.getElementById("search").value;
+    // Function to delete a specific marker by its ID
+    function deleteMarkerById(id) {
+      if (markers[id]) {
+        markers[id].remove(); 
+        delete markers[id]; 
+      }
+    }
 
-        makeMapGoSomewhere(userInputText);
-        console.log("CLicked!", userInputText);
+    element.addEventListener("click", function () {
+      //Get the text the user types in
+      //Stored inside userInputText!
+      var userInputText = document.getElementById("search").value;
+
+      makeMapGoSomewhere(userInputText);
+      console.log("CLicked!", userInputText);
 
     })
 
     function makeMapGoSomewhere(address) {
-        const mapboxClient = mapboxSdk({accessToken: mapboxgl.accessToken});
-    mapboxClient.geocoding
-      .forwardGeocode({
-        query: address,
-        autocomplete: false,
-        limit: 1
-      })
-      .send()
-      .then((response) => {
-        if (
-          !response ||
-          !response.body ||
-          !response.body.features ||
-          !response.body.features.length
-        ) {
-          console.error('Invalid response:');
-          console.error(response);
-          return;
-        }
-        const feature = response.body.features[0];
+      const mapboxClient = mapboxSdk({accessToken: mapboxgl.accessToken});
+      mapboxClient.geocoding
+        .forwardGeocode({
+          query: address,
+          autocomplete: false,
+          limit: 1
+        })
+        .send()
+        .then((response) => {
+          if (
+            !response ||
+            !response.body ||
+            !response.body.features ||
+            !response.body.features.length
+          ) {
+            console.error('Invalid response:');
+            console.error(response);
+            return;
+          }
+          const feature = response.body.features[0];
+          console.log(feature.center);
 
-        
 
-        // Create a marker and add it to the map.
-        new mapboxgl.Marker().setLngLat(feature.center).addTo(map);
-      });
+          // Create a marker and add it to the map.
+          new mapboxgl.Marker().setLngLat(feature.center).addTo(map);
+
+
+          //Fly to function
+          map.flyTo({
+            center: feature.center,
+            essential: true
+          });
+
+        });
 
     }
-    
+
   </script>
 </body>
 
