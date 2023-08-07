@@ -9,8 +9,6 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <!-- Js file for adding a marker -->
   <script src="https://unpkg.com/@mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
-  <!-- Js file for fly to -->
-  <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
 
   <style>
     body {
@@ -84,8 +82,8 @@
     // Adding a click event listener
     map.on('style.load', function () {
       map.on("click", function (event) {
-
-        const markerId = markerIdCounter++; // Get a new unique ID for the marker
+      // Get a new unique ID for the marker
+        const markerId = markerIdCounter++; 
         const marker = new mapboxgl.Marker({
           color: "blue",
         }).setLngLat(event.lngLat).addTo(map);
@@ -121,7 +119,7 @@
     function deleteMarkerById(id) {
       if (markers[id]) {
         markers[id].remove(); 
-        delete markers[id]; 
+        delete markers[id]; // This line removes the marker object from the markers object
       }
     }
 
