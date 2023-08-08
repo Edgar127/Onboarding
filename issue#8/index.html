@@ -9,70 +9,132 @@
   <script src="https://api.mapbox.com/mapbox-gl-js/v2.15.0/mapbox-gl.js"></script>
   <!-- Js file for adding a marker -->
   <script src="https://unpkg.com/@mapbox/mapbox-sdk/umd/mapbox-sdk.min.js"></script>
-
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-    }
-
-    #map {
-      position: absolute;
-      top: 0;
-      bottom: 0;
-      width: 75%;
-      right: 0
-    }
-
-    /* Reduce the map width to 75% */
-    .Sidebar {
-      width: 25%;
-      /* Set the sidebar width to 25% of the viewport */
-      display: block;
-      padding: 8px 16px;
-      text-align: left;
-      border: none;
-      white-space: normal;
-      float: left;
-      outline: 0;
-    }
-  </style>
+  <link rel="stylesheet" href="/app.css" /> 
+  <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+  <link rel="stylesheet" href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css" type="text/css">  
+  
 </head>
 
 <body>
-  <!-- Sidebar -->
-  <div class="Sidebar">
-    <a class="Top">Left </a>
-    <a>Middle</a>
-    <a>Right</a>
-    <!-- Search for  -->
-    <div class="Search">
-      <br><br>
-      <input id="search" type="text" placeholder="Search for ...">
-      <button id="Btn" type="submit">Go</button>
-      <p id="w"></p>
-    </div>
-    <!-- Drop list -->
-    <div class="Drop List">
-      <br>
-      <select>
-        <option>Select item from tis list</option>
-      </select>
-    </div>
-  </div>
 
-  <!-- Rendering the map -->
-  <div id="map"></div>
-  <script>
-    mapboxgl.accessToken = 'pk.eyJ1IjoiZWRnYXIxMjciLCJhIjoiY2xrMzFodmFoMDM4eDNxcXdldGI3ZWJlMyJ9.rSpor_1z9qaL1Ng6yCuDvg';
-    const map = new mapboxgl.Map({
-      container: 'map', 
+
+    <!--For Interactive Sidebar Body-->
+    <div id="mySidebar" class="sidebar">
+      <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
+      <a href="#">(placeholder) About</a>
+      <a href="#">(placeholder) Contact</a>
+  
+      <div id="geocoder" class="geocoder"></div>    
       
-      style: 'mapbox://styles/mapbox/streets-v12', 
-      center: [-74.5, 40], 
-      zoom: 9 
-    });
-  </script>
+    </div>
+  
+    <div id="main">
+      <button class="openbtn" onclick="openNav()">☰ Toggle Sidebar</button>  
+      <div id="map"></div>    
+    </div>
+  
+    <script>
+      function openNav() {
+        document.getElementById("mySidebar").style.width = "250px";
+        document.getElementById("main").style.marginLeft = "250px";
+      }
+      function closeNav() {
+        document.getElementById("mySidebar").style.width = "0";
+        document.getElementById("main").style.marginLeft= "0";
+      }
+    </script>
+    <!--End Interactive Sidebar Body-->
+     
+    
+       
+    <script>
+      //everything after this needs to be AFTER sidebar.
+      mapboxgl.accessToken = 'pk.eyJ1Ijoibml0dHlqZWUiLCJhIjoid1RmLXpycyJ9.NFk875-Fe6hoRCkGciG8yQ';
+  
+      var map = new mapboxgl.Map({
+        container: 'map',
+        style: 'mapbox://styles/mapbox/streets-v12',
+        center: [-121.9317, 37.3458],
+        zoom: 12
+      });
+    </script>
+    
+    
+    
+    <script>  
+      // Given a query in the form "lng, lat" or "lat, lng", returns the matching geographic coordinate(s)
+      
+      const coordinatesGeocoder = function (query) {
+      
+        // Match anything which looks like decimal degrees coordinate pair.
+        const matches = query.match(
+          /^[ ]*(?:Lat: )?(-?\d+\.?\d*)[, ]+(?:Lng: )?(-?\d+\.?\d*)[ ]*$/i
+        );
+        if (!matches) {
+          return null;
+        }
+  
+        function coordinateFeature(lng, lat) {
+          return {
+            center: [lng, lat],
+            geometry: {
+              type: 'Point',
+              coordinates: [lng, lat]
+            },
+            place_name: 'Lat: ' + lat + ' Lng: ' + lng,
+            place_type: ['coordinate'],
+            properties: {},
+            type: 'Feature'
+          };
+        }
+  
+        const coord1 = Number(matches[1]);
+        const coord2 = Number(matches[2]);
+        const geocodes = [];
+  
+        if (coord1 < -90 || coord1 > 90) {
+          // must be lng, lat
+          geocodes.push(coordinateFeature(coord1, coord2));
+        }
+  
+        if (coord2 < -90 || coord2 > 90) {
+          // must be lat, lng
+          geocodes.push(coordinateFeature(coord2, coord1));
+        }
+  
+        if (geocodes.length === 0) {
+          // else could be either lng, lat or lat, lng
+          geocodes.push(coordinateFeature(coord1, coord2));
+          geocodes.push(coordinateFeature(coord2, coord1));
+        }
+  
+        return geocodes;
+      };      
+    </script>
+     
+    
+    
+    <script>
+      // Add the control to the map.
+      
+      var geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken,
+        mapboxgl: mapboxgl,      
+        localGeocoder: coordinatesGeocoder,
+        zoom: 12,
+        placeholder: '"-121, 37" or place',
+        reverseGeocode: true
+      });
+      
+      document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
+      
+      geocoder.on('result', function(e) {
+        console.log(e.result.center)
+      })
+    </script>
+
+
+
 
   <script>
 
@@ -80,23 +142,21 @@
     let markerIdCounter = 0; 
 
     // Adding a click event listener
-    map.on('style.load', function () {
+
       map.on("click", function (event) {
       // Get a new unique ID for the marker
         const markerId = markerIdCounter++; 
-        const marker = new mapboxgl.Marker({
-          color: "blue",
-        }).setLngLat(event.lngLat).addTo(map);
+        const marker = new mapboxgl.Marker().setLngLat(event.lngLat).addTo(map);
+        
         //Adds a pop up with coordinates
         var coordinates = event.lngLat;
-        new mapboxgl.Popup()
+        new mapboxgl.Popup({offset: [0, -30]})
           .setLngLat(coordinates)
           .setHTML('you clicked here: <br/>' + coordinates)
           .addTo(map);
         // Store the marker in the markers object with its unique ID
         markers[markerId] = marker;
       });
-    });
 
     let longPressTimer;
     // Delete marker
@@ -123,53 +183,7 @@
       }
     }
 
-    element.addEventListener("click", function () {
-      //Get the text the user types in
-      //Stored inside userInputText!
-      var userInputText = document.getElementById("search").value;
 
-      makeMapGoSomewhere(userInputText);
-      console.log("CLicked!", userInputText);
-
-    })
-
-    function makeMapGoSomewhere(address) {
-      const mapboxClient = mapboxSdk({accessToken: mapboxgl.accessToken});
-      mapboxClient.geocoding
-        .forwardGeocode({
-          query: address,
-          autocomplete: false,
-          limit: 1
-        })
-        .send()
-        .then((response) => {
-          if (
-            !response ||
-            !response.body ||
-            !response.body.features ||
-            !response.body.features.length
-          ) {
-            console.error('Invalid response:');
-            console.error(response);
-            return;
-          }
-          const feature = response.body.features[0];
-          console.log(feature.center);
-
-
-          // Create a marker and add it to the map.
-          new mapboxgl.Marker().setLngLat(feature.center).addTo(map);
-
-
-          //Fly to function
-          map.flyTo({
-            center: feature.center,
-            essential: true
-          });
-
-        });
-
-    }
 
   </script>
 </body>
