@@ -33,8 +33,8 @@
   
   <script>
     function openNav() {
-      document.getElementById("mySidebar").style.width = "250px";
-      document.getElementById("main").style.marginLeft = "250px";
+      document.getElementById("mySidebar").style.width = "300px";
+      document.getElementById("main").style.marginLeft = "300px";
     }
     function closeNav() {
       document.getElementById("mySidebar").style.width = "0";
@@ -127,13 +127,17 @@
         
       //Adds a pop up with coordinates
       var coordinates = event.lngLat;
+      var arrCoord = [];
+      arrCoord[0] = coordinates["lng"];
+      arrCoord[1] = coordinates["lat"];
+
       new mapboxgl.Popup({offset: [0, -30]})
         .setLngLat(coordinates)
         .setHTML('you clicked here: <br/>' + coordinates)
         .addTo(map);
       // Store the marker in the markers object with its unique ID
       markers[markerId] = marker;
-      markersCoordArr[markerId] = coordinates;
+      markersCoordArr[markerId] = arrCoord;
 
       console.log("markersCoordArr:", markersCoordArr);
 
@@ -183,7 +187,8 @@
       zoom: 12,
       placeholder: '"-121, 37" or place',
       reverseGeocode: true,
-      marker: false   // don't use default marker, manually add to our list...
+      marker: false  // don't use default marker, manually add to our list...
+
     });
     
     document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
