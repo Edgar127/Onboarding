@@ -83,7 +83,9 @@ html, body, #map{
   padding: 12px;  /*left, up, right, down*/
 
 }
-
+#coordinatesList  {
+  color: white;
+}
 
 /*
 .geocoder {

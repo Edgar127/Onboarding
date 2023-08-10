@@ -21,7 +21,7 @@
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
     <a href="#">(placeholder) About</a>
     <a href="#">(placeholder) Contact</a>
-  
+    <div id="coordinatesList"></div>
     <div id="geocoder" class="geocoder"></div>    
       
   </div>
@@ -140,7 +140,11 @@
       markersCoordArr[markerId] = arrCoord;
 
       console.log("markersCoordArr:", markersCoordArr);
-
+// Display the coordinates in the sidebar
+      const coordinatesList = document.getElementById("coordinatesList");
+      const coordinatesParagraph = document.createElement("p");
+      coordinatesParagraph.textContent = `Marker ${markerId}: ${coordinates.lng.toFixed(6)}, ${coordinates.lat.toFixed(6)}`;
+      coordinatesList.appendChild(coordinatesParagraph);
     });
 
     let longPressTimer;
