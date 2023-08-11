@@ -144,6 +144,7 @@
       const coordinatesList = document.getElementById("coordinatesList");
       const coordinatesParagraph = document.createElement("p");
       coordinatesParagraph.textContent = `Marker ${markerId}: ${coordinates.lng.toFixed(6)}, ${coordinates.lat.toFixed(6)}`;
+      coordinatesParagraph.id = `marker_${markerId}`;
       coordinatesList.appendChild(coordinatesParagraph);
     });
 
@@ -171,11 +172,21 @@
         //markersCoordArr[id].remove();   <== does not need this.  WHY???
         delete markers[id]; // This line removes the marker object from the markers object
         delete markersCoordArr[id];
+        removeFromSidebar(id);
       }
 
       console.log("markersCoordArr:", markersCoordArr);
 
     }
+    function removeFromSidebar(markerId) {
+    const coordinatesList = document.getElementById("coordinatesList");
+    const markerListItem = document.getElementById(`marker_${markerId}`);
+    if (markerListItem) {
+      coordinatesList.removeChild(markerListItem);
+  }
+
+}
+
 
   </script>
 
