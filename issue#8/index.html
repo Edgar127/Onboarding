@@ -19,10 +19,18 @@
   <!--For Interactive Sidebar Body-->
   <div id="mySidebar" class="sidebar">
     <a href="javascript:void(0)" class="closebtn" onclick="closeNav()">×</a>
-    <a href="#">(placeholder) About</a>
-    <a href="#">(placeholder) Contact</a>
+
+    <h3> Search for place or coordinates: </h3>
+    <div id="geocoder"></div> 
+    
+    <br>
+    <br>
+    <br>
+    <br>
+    
+    <h3> List of current markers: </h3>
     <div id="coordinatesList"></div>
-    <div id="geocoder" class="geocoder"></div>    
+       
       
   </div>
   
@@ -133,19 +141,23 @@
 
       new mapboxgl.Popup({offset: [0, -30]})
         .setLngLat(coordinates)
-        .setHTML('you clicked here: <br/>' + coordinates)
+        .setHTML('you clicked here: <br/>'
+                  + 'lng: ' + coordinates["lng"].toFixed(6) + ', '
+                  + 'lat: ' + coordinates["lat"].toFixed(6))
         .addTo(map);
       // Store the marker in the markers object with its unique ID
       markers[markerId] = marker;
       markersCoordArr[markerId] = arrCoord;
 
       console.log("markersCoordArr:", markersCoordArr);
-// Display the coordinates in the sidebar
+      
+      // Display the coordinates in the sidebar (for manually added markers)
       const coordinatesList = document.getElementById("coordinatesList");
       const coordinatesParagraph = document.createElement("p");
       coordinatesParagraph.textContent = `Marker ${markerId}: ${coordinates.lng.toFixed(6)}, ${coordinates.lat.toFixed(6)}`;
       coordinatesParagraph.id = `marker_${markerId}`;
       coordinatesList.appendChild(coordinatesParagraph);
+
     });
 
     let longPressTimer;
@@ -178,15 +190,16 @@
       console.log("markersCoordArr:", markersCoordArr);
 
     }
+
+    // function to remove coordinate from sidebar
     function removeFromSidebar(markerId) {
-    const coordinatesList = document.getElementById("coordinatesList");
-    const markerListItem = document.getElementById(`marker_${markerId}`);
-    if (markerListItem) {
-      coordinatesList.removeChild(markerListItem);
-  }
-
-}
-
+      const coordinatesList = document.getElementById("coordinatesList");
+      const markerListItem = document.getElementById(`marker_${markerId}`);
+      
+      if (markerListItem) {
+        coordinatesList.removeChild(markerListItem);
+      }
+    }
 
   </script>
 
@@ -200,10 +213,9 @@
       mapboxgl: mapboxgl,      
       localGeocoder: coordinatesGeocoder,
       zoom: 12,
-      placeholder: '"-121, 37" or place',
+      placeholder: '"San Jose" or "-121, 37"',
       reverseGeocode: true,
       marker: false  // don't use default marker, manually add to our list...
-
     });
     
     document.getElementById('geocoder').appendChild(geocoder.onAdd(map));
@@ -212,13 +224,19 @@
       coordinates = e.result.center;
 
       const markerId = markerIdCounter++; 
-      const marker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);
-      
+      const marker = new mapboxgl.Marker().setLngLat(coordinates).addTo(map);      
 
       markers[markerId] = marker;
       markersCoordArr[markerId] = coordinates;
 
       console.log("markersCoordArr:", markersCoordArr);
+      
+      // Display the coordinates in the sidebar (for markers added using geocoder)
+      const coordinatesList = document.getElementById("coordinatesList");
+      const coordinatesParagraph = document.createElement("p");
+      coordinatesParagraph.textContent = `Marker ${markerId}: ${coordinates[0].toFixed(6)}, ${coordinates[1].toFixed(6)}`;
+      coordinatesParagraph.id = `marker_${markerId}`;
+      coordinatesList.appendChild(coordinatesParagraph);
 
     })
   </script>
